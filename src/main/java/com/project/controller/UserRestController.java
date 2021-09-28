@@ -1,7 +1,5 @@
 package com.project.controller;
 
-import com.project.food.Food;
-import com.project.jpa.UserOrderRepository;
 import com.project.jpa.UserRepository;
 import com.project.model.User;
 import com.project.model.UserOrder;
@@ -32,10 +30,15 @@ public class UserRestController {
         return userService.deposit(id, balance);
     }
 
-    @PostMapping("/order")
-    public User order(@RequestBody Food food) {
-       return userService.order(food);
+    @PutMapping("/order")
+    public UserOrder userOrder(@RequestParam Long id, @RequestParam String orderName) {
+        return userService.makeOrder(id, orderName);
     }
+//
+//    @PostMapping("/order")
+//    public User order(@RequestBody Food food) {
+//       return userService.order(food);
+//    }
 
     @GetMapping("/{id}")
     public User getOne(@PathVariable Long id) {
