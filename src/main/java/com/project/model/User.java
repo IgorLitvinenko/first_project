@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
@@ -29,7 +30,7 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     @JsonManagedReference
-    private List<UserOrder> orderHistory;
+    private List<UserOrder> orderHistory = new ArrayList<>();
 
     public void setBalance(BigDecimal balance) {
         if (balance.intValue() >= 0) {

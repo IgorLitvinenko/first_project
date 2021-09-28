@@ -7,7 +7,8 @@ import com.project.model.User;
 import com.project.model.UserOrder;
 import com.project.service.UserService;
 import org.springframework.web.bind.annotation.*;
-//, consumes="application/json"
+
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping(value = "/user")
@@ -24,6 +25,11 @@ public class UserRestController {
     @PostMapping("/add")
     public User save(@RequestBody User user) {
        return userRepository.save(user);
+    }
+
+    @PutMapping("/deposit")
+    public User deposit(@RequestParam Long id, @RequestParam BigDecimal balance) {
+        return userService.deposit(id, balance);
     }
 
     @PostMapping("/order")

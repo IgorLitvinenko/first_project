@@ -8,6 +8,8 @@ import com.project.model.UserOrder;
 import com.project.model.User;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
@@ -29,6 +31,12 @@ public class UserService {
         user.setOrderHistory(user.getOrderHistory());
         userOrderRepository.save(userOrder);
         return user;
+    }
+
+    public User deposit(Long id, BigDecimal balance) {
+        User user = userRepository.findById(id).get();
+        user.setBalance(user.getBalance().add(balance));
+        return userRepository.save(user);
     }
 
 }
