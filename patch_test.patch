@@ -1,0 +1,291 @@
+Index: src/main/java/com/project/jpa/OrderRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/project/jpa/OrderRepository.java b/src/main/java/com/project/jpa/OrderRepository.java
+--- a/src/main/java/com/project/jpa/OrderRepository.java	(revision 21d36264d801d64c8987de16929d14c968f8b2bc)
++++ b/src/main/java/com/project/jpa/OrderRepository.java	(date 1632948674431)
+@@ -2,9 +2,20 @@
+ 
+ import com.project.model.Order;
+ import org.springframework.data.jpa.repository.JpaRepository;
++import org.springframework.data.jpa.repository.Modifying;
++import org.springframework.data.jpa.repository.Query;
++import org.springframework.data.repository.query.Param;
+ import org.springframework.stereotype.Repository;
++import org.springframework.transaction.annotation.Transactional;
+ 
+ @Repository
+ public interface OrderRepository extends JpaRepository<Order, Long> {
+     Order findByOrderName(String orderName);
+-}
+\ No newline at end of file
++
++    @Transactional
++    @Modifying
++    @Query(value = "delete from `order` u where u.order_name = :orderName", nativeQuery = true )
++    void deleteOrderByOrderName(@Param("orderName") String orderName);
++
++    void deleteByOrderName(String orderName);
++}
+Index: src/main/java/com/project/service/OrderService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/project/service/OrderService.java b/src/main/java/com/project/service/OrderService.java
+--- a/src/main/java/com/project/service/OrderService.java	(revision 21d36264d801d64c8987de16929d14c968f8b2bc)
++++ b/src/main/java/com/project/service/OrderService.java	(date 1632862185525)
+@@ -1,16 +1,16 @@
+-package com.project.service;
+-
+-
+-import com.project.jpa.OrderRepository;
+-import org.springframework.stereotype.Service;
+-
+-@Service
+-public class OrderService {
+-    private final OrderRepository orderRepository;
+-
+-    public OrderService(OrderRepository orderRepository) {
+-        this.orderRepository = orderRepository;
+-    }
+-
+-
+-}
++//package com.project.service;
++//
++//
++//import com.project.jpa.OrderRepository;
++//import org.springframework.stereotype.Service;
++//
++//@Service
++//public class OrderService {
++//    private final OrderRepository orderRepository;
++//
++//    public OrderService(OrderRepository orderRepository) {
++//        this.orderRepository = orderRepository;
++//    }
++//
++//
++//}
+Index: src/main/java/com/project/model/Order.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/project/model/Order.java b/src/main/java/com/project/model/Order.java
+--- a/src/main/java/com/project/model/Order.java	(revision 21d36264d801d64c8987de16929d14c968f8b2bc)
++++ b/src/main/java/com/project/model/Order.java	(date 1632948402804)
+@@ -1,21 +1,22 @@
+ package com.project.model;
+ 
+-import com.fasterxml.jackson.annotation.JsonManagedReference;
++
++import com.fasterxml.jackson.annotation.JsonFilter;
++import com.fasterxml.jackson.annotation.JsonIgnore;
+ import com.project.exception.MoneyError;
+ import lombok.Data;
+ import lombok.NoArgsConstructor;
+ import javax.persistence.*;
+ import java.math.BigDecimal;
+-import java.util.HashSet;
+-import java.util.Set;
+ 
+ @Data
+ @Entity
+ @NoArgsConstructor
+-@Table(name = "orders")
++@Table(name = "`order`")
+ public class Order {
+     @Id
+     @GeneratedValue
++    @JsonIgnore
+     private Long id;
+ 
+     @Column(name = "order_name")
+Index: src/main/java/com/project/controller/OrderRestController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/project/controller/OrderRestController.java b/src/main/java/com/project/controller/OrderRestController.java
+--- a/src/main/java/com/project/controller/OrderRestController.java	(revision 21d36264d801d64c8987de16929d14c968f8b2bc)
++++ b/src/main/java/com/project/controller/OrderRestController.java	(date 1632948187654)
+@@ -2,22 +2,27 @@
+ 
+ import com.project.jpa.OrderRepository;
+ import com.project.model.Order;
+-import org.springframework.web.bind.annotation.PostMapping;
+-import org.springframework.web.bind.annotation.RequestBody;
+-import org.springframework.web.bind.annotation.RequestMapping;
+-import org.springframework.web.bind.annotation.RestController;
++import lombok.RequiredArgsConstructor;
++import org.springframework.web.bind.annotation.*;
+ 
+ @RestController
++@RequiredArgsConstructor
+ @RequestMapping(value = "/order")
+ public class OrderRestController {
++
+     private final OrderRepository orderRepository;
+ 
+-    public OrderRestController(OrderRepository orderRepository) {
+-        this.orderRepository = orderRepository;
+-    }
+-
+     @PostMapping("/add")
+     public Order order(@RequestBody Order order) {
+         return orderRepository.save(order);
+     }
++
++    @DeleteMapping("/delete/{id}")
++    public void remove(@PathVariable Long id) {
++        orderRepository.deleteById(id);
++    }
++    @DeleteMapping("/delete")
++    public void remove(@RequestBody String orderName) {
++        orderRepository.deleteOrderByOrderName(orderName);
++    }
+ }
+Index: src/main/java/com/project/model/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/project/model/User.java b/src/main/java/com/project/model/User.java
+--- a/src/main/java/com/project/model/User.java	(revision 21d36264d801d64c8987de16929d14c968f8b2bc)
++++ b/src/main/java/com/project/model/User.java	(date 1632939563105)
+@@ -1,5 +1,6 @@
+ package com.project.model;
+ 
++import com.fasterxml.jackson.annotation.JsonFilter;
+ import com.fasterxml.jackson.annotation.JsonManagedReference;
+ import com.project.exception.MoneyError;
+ import lombok.Data;
+@@ -7,14 +8,12 @@
+ import javax.persistence.*;
+ import java.math.BigDecimal;
+ import java.util.List;
+-import java.util.Set;
+ 
+ @NoArgsConstructor
+ @Entity
+ @Data
+ @Table(name = "user")
+ public class User {
+-
+     @Id
+     @GeneratedValue
+     private Long id;
+@@ -28,8 +27,8 @@
+     @Column(name = "balance")
+     private BigDecimal balance = BigDecimal.valueOf(10000);
+ 
+-//    @OneToMany(mappedBy = "orders")
+-    private List<UserOrder> orderHistory;
++    @OneToMany(mappedBy="user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
++    private List<UserOrder> userOrder;
+ 
+     public void setBalance(BigDecimal balance) {
+         if (balance.intValue() >= 0) {
+Index: src/main/java/com/project/controller/UserRestController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/project/controller/UserRestController.java b/src/main/java/com/project/controller/UserRestController.java
+--- a/src/main/java/com/project/controller/UserRestController.java	(revision 21d36264d801d64c8987de16929d14c968f8b2bc)
++++ b/src/main/java/com/project/controller/UserRestController.java	(date 1632865131100)
+@@ -34,11 +34,6 @@
+     public UserOrder userOrder(@RequestParam Long id, @RequestParam String orderName) {
+         return userService.makeOrder(id, orderName);
+     }
+-//
+-//    @PostMapping("/order")
+-//    public User order(@RequestBody Food food) {
+-//       return userService.order(food);
+-//    }
+ 
+     @GetMapping("/{id}")
+     public User getOne(@PathVariable Long id) {
+Index: src/main/java/com/project/service/UserService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/project/service/UserService.java b/src/main/java/com/project/service/UserService.java
+--- a/src/main/java/com/project/service/UserService.java	(revision 21d36264d801d64c8987de16929d14c968f8b2bc)
++++ b/src/main/java/com/project/service/UserService.java	(date 1632862185521)
+@@ -7,7 +7,6 @@
+ import com.project.model.Order;
+ import com.project.model.User;
+ import com.project.model.UserOrder;
+-import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Service;
+ 
+ import java.math.BigDecimal;
+@@ -25,18 +24,6 @@
+         this.orderRepository = orderRepository;
+     }
+ 
+-//    public User order(Food food) {
+-//        Long userId = food.getUser().getId();
+-//        User user = userRepository.findById(userId).get();
+-//        user.setBalance(user.getBalance().subtract(food.getCost()));
+-//        UserOrder userOrder = new UserOrder(food.toString());
+-//        userOrder.setUser(user);
+-//        user.getOrderHistory().add(userOrder);
+-//        user.setOrderHistory(user.getOrderHistory());
+-//        userOrderRepository.save(userOrder);
+-//        return user;
+-//    }
+-
+     public User deposit(Long id, BigDecimal balance) {
+         User user = userRepository.findById(id).get();
+         user.setBalance(user.getBalance().add(balance));
+Index: src/main/java/com/project/model/UserOrder.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/project/model/UserOrder.java b/src/main/java/com/project/model/UserOrder.java
+--- a/src/main/java/com/project/model/UserOrder.java	(revision 21d36264d801d64c8987de16929d14c968f8b2bc)
++++ b/src/main/java/com/project/model/UserOrder.java	(date 1632939963947)
+@@ -2,12 +2,11 @@
+ 
+ 
+ import com.fasterxml.jackson.annotation.JsonBackReference;
++import com.fasterxml.jackson.annotation.JsonIgnore;
+ import lombok.Data;
+ import lombok.NoArgsConstructor;
+-
+ import javax.persistence.*;
+-import java.util.List;
+-import java.util.Set;
++
+ 
+ @Data
+ @Entity
+@@ -16,16 +15,17 @@
+ public class UserOrder {
+     @Id
+     @GeneratedValue
++    @JsonIgnore
+     private Long id;
+ 
+-    @ManyToOne
++    @ManyToOne(cascade = CascadeType.ALL)
+     @JoinColumn(name = "user_id")
+     @JsonBackReference(value = "user")
+     private User user;
+ 
+-    @ManyToOne
++    @ManyToOne(cascade = CascadeType.ALL)
+     @JoinColumn(name = "order_id")
+-    @JsonBackReference(value = "order")
+     private Order order;
+ 
++
+ }
