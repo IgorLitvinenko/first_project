@@ -1,21 +1,22 @@
 package com.project.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.exception.MoneyError;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
 @Entity
 @NoArgsConstructor
-@Table(name = "orders")
+@Table(name = "`order`")
 public class Order {
     @Id
     @GeneratedValue
+    @JsonIgnore
     private Long id;
 
     @Column(name = "order_name")

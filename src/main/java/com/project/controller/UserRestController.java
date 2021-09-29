@@ -34,11 +34,6 @@ public class UserRestController {
     public UserOrder userOrder(@RequestParam Long id, @RequestParam String orderName) {
         return userService.makeOrder(id, orderName);
     }
-//
-//    @PostMapping("/order")
-//    public User order(@RequestBody Food food) {
-//       return userService.order(food);
-//    }
 
     @GetMapping("/{id}")
     public User getOne(@PathVariable Long id) {

@@ -1,5 +1,6 @@
 package com.project.model;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.project.exception.MoneyError;
 import lombok.Data;
@@ -7,14 +8,12 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
 
 @NoArgsConstructor
 @Entity
 @Data
 @Table(name = "user")
 public class User {
-
     @Id
     @GeneratedValue
     private Long id;
@@ -28,8 +27,8 @@ public class User {
     @Column(name = "balance")
     private BigDecimal balance = BigDecimal.valueOf(10000);
 
-//    @OneToMany(mappedBy = "orders")
-    private List<UserOrder> orderHistory;
+    @OneToMany(mappedBy="user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<UserOrder> userOrder;
 
     public void setBalance(BigDecimal balance) {
         if (balance.intValue() >= 0) {

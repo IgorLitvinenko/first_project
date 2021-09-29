@@ -2,12 +2,11 @@ package com.project.model;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import javax.persistence.*;
-import java.util.List;
-import java.util.Set;
+
 
 @Data
 @Entity
@@ -16,16 +15,17 @@ import java.util.Set;
 public class UserOrder {
     @Id
     @GeneratedValue
+    @JsonIgnore
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     @JsonBackReference(value = "user")
     private User user;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id")
-    @JsonBackReference(value = "order")
     private Order order;
+
 
 }
